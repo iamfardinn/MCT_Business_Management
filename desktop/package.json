@@ -1,0 +1,52 @@
+{
+  "name": "@mct/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCT Business Management System — Desktop Client",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"wait-on http://localhost:5173 && electron .\" --kill-others",
+    "build": "electron-builder",
+    "pack": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.mct.businessmanager",
+    "productName": "MCT Business Manager",
+    "win": {
+      "target": "nsis",
+      "sign": null,
+      "signingHashAlgorithms": []
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "files": [
+      "electron/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend/dist",
+        "to": "frontend/dist",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../backend/dist/server.bundle.js",
+        "to": "backend/server.bundle.js"
+      }
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^31.1.0",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^7.2.0"
+  }
+}

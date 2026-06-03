@@ -1,0 +1,10 @@
+packages:
+  - 'backend'
+  - 'frontend'
+  - 'desktop'
+  - 'shared'
+  - 'database'
+allowBuilds:
+  bcrypt: true
+  electron: true
+  esbuild: true

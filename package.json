@@ -1,0 +1,22 @@
+{
+  "name": "mct-bms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCT Business Management System — Monorepo",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev": "pnpm run dev:backend & pnpm run dev:frontend",
+    "build:frontend": "pnpm --filter frontend build",
+    "build:desktop": "pnpm --filter desktop build",
+    "db:migrate": "pnpm --filter database migrate",
+    "db:seed": "pnpm --filter database seed"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  }
+}
