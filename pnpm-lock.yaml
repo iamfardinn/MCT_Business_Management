@@ -105,6 +105,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
+      node-adodb:
+        specifier: ^5.0.3
+        version: 5.0.3
       pg:
         specifier: ^8.11.5
         version: 8.21.0
@@ -1166,6 +1169,9 @@ packages:
     peerDependencies:
       dmg-builder: 24.13.3
       electron-builder-squirrel-windows: 24.13.3
+
+  arch@2.2.0:
+    resolution: {integrity: sha512-Of/R0wqp83cgHozfIYLbBMnej79U/SVGOOyuB3VVFv1NRM/PSFMK12x9KVtiYzJqmnU5WR2qp0Z5rHb7sWGnFQ==}
 
   archiver-utils@2.1.0:
     resolution: {integrity: sha512-bEL/yUb/fNNiNTuUz979Z0Yg5L+LzLxGJz8x79lYmR54fmTIb6ob/hNQgkQnIUDWIFjZVQwl9Xs356I6BAMHfw==}
@@ -2511,6 +2517,11 @@ packages:
 
   node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
+
+  node-adodb@5.0.3:
+    resolution: {integrity: sha512-xQnoe7mx3b7B0QeW6visiQ2VxlX6rYaol20Ka5jZVKcetxOsXM4lsxfEZDmlOOoVJq/6BeoqPJHm3aZ4vjY+Bg==}
+    engines: {node: '>=6.0.0'}
+    os: [win32]
 
   node-releases@2.0.46:
     resolution: {integrity: sha512-GYVXHE2KnrzAfsAjl4uP++evGFCrAU1jta4ubEjIG7YWt/64Gqv66a30yKwWczVjA6j3bM4nBwH7Pk1JmDHaxQ==}
@@ -4451,6 +4462,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  arch@2.2.0: {}
+
   archiver-utils@2.1.0:
     dependencies:
       glob: 7.2.3
@@ -5985,6 +5998,13 @@ snapshots:
 
   node-addon-api@1.7.2:
     optional: true
+
+  node-adodb@5.0.3:
+    dependencies:
+      arch: 2.2.0
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
 
   node-releases@2.0.46: {}
 

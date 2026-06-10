@@ -109,22 +109,22 @@ export default function InvoiceDetailPage() {
   const approveMutation = useMutation({
     mutationFn: () => api.patch(`/invoices/${id}/approve`),
     onSuccess: () => {
-      addToast('Invoice approved successfully', 'success');
+      addToast('success', 'Invoice approved successfully');
       queryClient.invalidateQueries({ queryKey: ['invoice', id] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
     },
-    onError: () => addToast('Failed to approve invoice', 'error'),
+    onError: () => addToast('error', 'Failed to approve invoice'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: (reason: string) => api.patch(`/invoices/${id}/reject`, { reason }),
     onSuccess: () => {
-      addToast('Invoice rejected', 'warning');
+      addToast('warning', 'Invoice rejected');
       setShowRejectModal(false);
       queryClient.invalidateQueries({ queryKey: ['invoice', id] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
     },
-    onError: () => addToast('Failed to reject invoice', 'error'),
+    onError: () => addToast('error', 'Failed to reject invoice'),
   });
 
   // ── Totals ──────────────────────────────────────────────────────────────────

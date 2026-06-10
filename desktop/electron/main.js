@@ -12,6 +12,7 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const VITE_DEV_SERVER_URL = 'http://localhost:5173';
 const CONFIG_PATH         = path.join(app.getPath('userData'), 'config.json');
 const SERVER_CONFIG_PATH  = path.join(app.getPath('userData'), 'server-config.json');
+const DB_CONFIG_PATH      = path.join(__dirname, 'db-config.json');
 
 // ─── Register app:// as a privileged scheme (MUST be before app.whenReady) ───
 // This gives the renderer a real, secure origin so <script type="module">
@@ -44,6 +45,9 @@ function loadServerConfig() {
     if (fs.existsSync(SERVER_CONFIG_PATH)) {
       const saved = JSON.parse(fs.readFileSync(SERVER_CONFIG_PATH, 'utf-8'));
       cfg = { ...cfg, ...saved, db: { ...cfg.db, ...saved.db }, jwt: { ...cfg.jwt, ...saved.jwt } };
+    } else if (fs.existsSync(DB_CONFIG_PATH)) {
+      const dbDefault = JSON.parse(fs.readFileSync(DB_CONFIG_PATH, 'utf-8'));
+      cfg.db = { ...cfg.db, ...dbDefault };
     }
   } catch (e) { console.error('[ServerConfig]', e); }
 
