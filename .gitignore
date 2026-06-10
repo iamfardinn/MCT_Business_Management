@@ -9,3 +9,6 @@ Thumbs.db
 *.accdb
 *.ldb
 src-tauri/target/
+
+# Large generated files — not for version control
+database/access-schema.json

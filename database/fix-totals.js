@@ -1,9 +1,14 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../backend/.env') });
 const fs = require('fs');
 const { Client } = require('pg');
 
 async function run() {
   const client = new Client({
-    host: 'localhost', port: 5432, database: 'mct_bms', user: 'postgres', password: 'Fardin@YES3669'
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'mct_bms',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
   });
   await client.connect();
   
