@@ -1,7 +1,23 @@
 #!/usr/bin/env node
 /**
- * MCT BMS — Access Database Migration Script
- * 
+ * @deprecated — DO NOT USE
+ *
+ * This script is broken and has been superseded by migrate-data.js.
+ *
+ * Problems with this file:
+ *   1. It queries tables [Sub-Dealer] and [Retailer] which do NOT exist in
+ *      MCT-Run.accdb. The real contacts table is [Table-Contacts].
+ *   2. Field names used (DealerName, RetailerName, etc.) don't match the
+ *      actual Access schema — all rows would be imported as empty/Unknown.
+ *   3. It only migrates 4 tables; migrate-data.js handles all 30+ tables.
+ *
+ * Use migrate-data.js instead:
+ *   node database/migrate-data.js
+ *
+ * This file is kept for historical reference only.
+ */
+
+// ─── DEPRECATED — see above ───────────────────────────────────────────────────
  * Migrates data from the legacy MCT-Run.accdb (MS Access) database
  * to PostgreSQL. Uses node-adodb which requires the Microsoft Access
  * Database Engine (32-bit ODBC driver) to be installed on Windows.
