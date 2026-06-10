@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InvoiceNewPage from './pages/InvoiceNewPage';
 import InvoiceListPage from './pages/InvoiceListPage';
+import InvoiceDetailPage from './pages/InvoiceDetailPage';
 import ExpenseNewPage from './pages/ExpenseNewPage';
 import ContactsPage from './pages/ContactsPage';
 import CashbookPage from './pages/CashbookPage';
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="invoice/new" element={<InvoiceNewPage />} />
         <Route path="invoices" element={<InvoiceListPage />} />
+        <Route path="invoices/:id" element={<InvoiceDetailPage />} />
         <Route path="expense/new" element={<ExpenseNewPage />} />
         <Route path="contacts" element={<ContactsPage />} />
         <Route path="cashbook" element={<CashbookPage />} />

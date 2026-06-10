@@ -93,7 +93,11 @@ export default function InvoiceListPage() {
                 contact_name?: string; subscriber_name?: string;
                 submitted_by_name: string; status: string; created_at: string;
               }) => (
-                <tr key={inv.id}>
+                <tr
+                  key={inv.id}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/invoices/${inv.id}`)}
+                >
                   <td style={{ fontWeight: 600, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>
                     {inv.invoice_number}
                   </td>
