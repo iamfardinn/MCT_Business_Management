@@ -1,12 +1,13 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Receipt, Users, BookOpen,
-  CheckSquare, BarChart3, UserCog, Wifi, LogOut, Bell, Search, Package, Settings, ShoppingCart, PieChart, Network, Shield, Briefcase, Banknote
+  CheckSquare, BarChart3, UserCog, Wifi, LogOut, Bell, Package, Settings, ShoppingCart, PieChart, Network, Shield, Briefcase, Banknote
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/api';
 import clsx from 'clsx';
+import GlobalSearch from '../GlobalSearch';
 
 function NavItem({ to, icon: Icon, label, badge }: {
   to: string; icon: React.ElementType; label: string; badge?: number;
@@ -109,10 +110,7 @@ export function AppLayout() {
       {/* ─── Main Content ─────────────────────────────────────────── */}
       <div className="main-content">
         <header className="topbar">
-          <div className="topbar-search">
-            <Search size={15} className="search-icon" />
-            <input type="search" placeholder="Search invoices, contacts..." id="global-search" />
-          </div>
+          <GlobalSearch />
           <div className="topbar-actions">
             <button className="topbar-icon-btn" id="notifications-btn" aria-label="Notifications">
               <Bell size={17} />
