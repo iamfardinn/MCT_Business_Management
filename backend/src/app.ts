@@ -17,6 +17,7 @@ import settingsRoutes from './routes/settings';
 import broadbandPaymentsRoutes from './routes/broadband_payments';
 import purchasesRoutes from './routes/purchases';
 import accountsRoutes from './routes/accounts';
+import auditRoutes from './routes/audit';
 
 const app = express();
 
@@ -81,6 +82,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/broadband_payments', broadbandPaymentsRoutes);
 app.use('/api/purchases', purchasesRoutes);
 app.use('/api/accounts', accountsRoutes);
+app.use('/api/audit', auditRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {

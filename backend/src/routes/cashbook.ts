@@ -156,6 +156,15 @@ router.post('/transactions', requireRole('admin'), async (req: Request, res: Res
       ]
     );
 
+    await writeAudit({
+      tableName: 'cashbook_transactions',
+      recordId: rows[0].id,
+      action: 'INSERT',
+      actorId: req.user!.sub,
+      newValues: rows[0],
+      ipAddress: req.ip
+    });
+
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) {
     console.error('[CashbookTransactions/POST]', err);
@@ -178,11 +187,24 @@ router.patch('/transactions/:id', requireRole('admin'), async (req: Request, res
   const values = keys.map((k) => updates[k]);
 
   try {
+    const existing = await pool.query('SELECT * FROM cashbook_transactions WHERE id = $1', [req.params.id]);
+    if (existing.rows.length === 0) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+
     const { rows } = await pool.query(
       `UPDATE cashbook_transactions SET ${setClause} WHERE id = $1 RETURNING *`,
       [req.params.id, ...values]
     );
-    if (!rows[0]) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+
+    await writeAudit({
+      tableName: 'cashbook_transactions',
+      recordId: req.params.id,
+      action: 'UPDATE',
+      actorId: req.user!.sub,
+      oldValues: existing.rows[0],
+      newValues: rows[0],
+      ipAddress: req.ip
+    });
+
     res.json({ success: true, data: rows[0] });
   } catch (err) {
     console.error('[CashbookTransactions/PATCH]', err);
@@ -193,8 +215,20 @@ router.patch('/transactions/:id', requireRole('admin'), async (req: Request, res
 // ─── DELETE /api/cashbook/transactions/:id ──────────────────────────────────────
 router.delete('/transactions/:id', requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
-    const { rowCount } = await pool.query('DELETE FROM cashbook_transactions WHERE id = $1', [req.params.id]);
-    if (rowCount === 0) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+    const existing = await pool.query('SELECT * FROM cashbook_transactions WHERE id = $1', [req.params.id]);
+    if (existing.rows.length === 0) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+
+    await pool.query('DELETE FROM cashbook_transactions WHERE id = $1', [req.params.id]);
+    
+    await writeAudit({
+      tableName: 'cashbook_transactions',
+      recordId: req.params.id,
+      action: 'DELETE',
+      actorId: req.user!.sub,
+      oldValues: existing.rows[0],
+      ipAddress: req.ip
+    });
+
     res.json({ success: true, message: 'Deleted successfully' });
   } catch (err) {
     console.error('[CashbookTransactions/DELETE]', err);

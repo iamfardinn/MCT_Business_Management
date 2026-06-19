@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Receipt, Users, BookOpen,
-  CheckSquare, BarChart3, UserCog, Wifi, LogOut, Bell, Search, Package, Settings, ShoppingCart, PieChart, Network
+  CheckSquare, BarChart3, UserCog, Wifi, LogOut, Bell, Search, Package, Settings, ShoppingCart, PieChart, Network, Shield
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useQuery } from '@tanstack/react-query';
@@ -86,6 +86,7 @@ export function AppLayout() {
               <NavItem to="/admin/subscribers" icon={Wifi} label="Subscribers" />
               <NavItem to="/admin/broadband_payments" icon={Wifi} label="Broadband Payments" />
               <NavItem to="/admin/users" icon={UserCog} label="Users" />
+              <NavItem to="/admin/audit-logs" icon={Shield} label="Audit Logs" />
               <NavItem to="/settings" icon={Settings} label="Settings" />
             </div>
           )}

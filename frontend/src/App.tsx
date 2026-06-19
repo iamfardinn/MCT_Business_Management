@@ -25,6 +25,7 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminSubscribersPage from './pages/admin/AdminSubscribersPage';
 import ChartOfAccountsPage from './pages/admin/ChartOfAccountsPage';
 import FinancialReportsPage from './pages/admin/FinancialReportsPage';
+import AuditLogsPage from './pages/admin/AuditLogsPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -72,6 +73,7 @@ function AppRoutes() {
         <Route path="admin/users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
         <Route path="admin/subscribers" element={<RequireAdmin><AdminSubscribersPage /></RequireAdmin>} />
         <Route path="admin/broadband_payments" element={<RequireAdmin><BroadbandPaymentsPage /></RequireAdmin>} />
+        <Route path="admin/audit-logs" element={<RequireAdmin><AuditLogsPage /></RequireAdmin>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
