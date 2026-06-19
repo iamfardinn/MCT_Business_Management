@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Banknote, Plus, Search, CheckCircle, X } from 'lucide-react';
-import api from '../../../lib/api';
-import { toast } from '../../../stores/toastStore';
+import api from '../../lib/api';
+import { toast } from '../../stores/toastStore';
 
 export default function PayrollPage() {
   const qc = useQueryClient();
@@ -57,8 +57,8 @@ export default function PayrollPage() {
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table">
+      <div className="table-wrapper">
+        <table className="data-table">
           <thead>
             <tr>
               <th>Month</th>

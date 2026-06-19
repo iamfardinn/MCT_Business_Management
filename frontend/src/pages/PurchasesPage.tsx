@@ -98,8 +98,8 @@ export default function PurchasesPage() {
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table">
+      <div className="table-wrapper">
+        <table className="data-table">
           <thead>
             <tr>
               <th>Date</th>

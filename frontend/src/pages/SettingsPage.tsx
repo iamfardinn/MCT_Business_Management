@@ -78,7 +78,7 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <table className="table">
+          <table className="data-table">
             <thead>
               <tr>
                 <th style={{ width: 60 }}>ID</th>
