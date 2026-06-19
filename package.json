@@ -8,7 +8,9 @@
     "dev:frontend": "pnpm --filter frontend dev",
     "dev": "pnpm run dev:backend & pnpm run dev:frontend",
     "build:frontend": "pnpm --filter frontend build",
+    "build:backend": "pnpm --filter backend build:bundle",
     "build:desktop": "pnpm --filter desktop build",
+    "dist": "pnpm run build:frontend && pnpm run build:backend && pnpm run build:desktop",
     "db:migrate": "pnpm --filter database migrate",
     "db:seed": "pnpm --filter database seed"
   },

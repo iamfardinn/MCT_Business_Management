@@ -26,6 +26,66 @@ export type ExpenseCategory =
 
 export type AuditAction = 'INSERT' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT';
 
+// ─── Settings / Configuration ──────────────────────────────────────────────────
+
+export interface Category {
+  id: number;
+  name: string;
+  type?: string;
+}
+
+export interface UserGroup {
+  id: number;
+  name: string;
+  category_id?: number;
+  type?: string;
+}
+
+export interface SubGroup {
+  id: number;
+  name: string;
+  group_id?: number;
+  type?: string;
+  reference?: string;
+}
+
+export interface Location {
+  id: number;
+  name: string;
+  group_name?: string;
+}
+
+export interface BroadbandPackage {
+  id: number;
+  package_to?: string;
+  name: string;
+  monthly_fee: number;
+}
+
+export interface ReferenceList {
+  id: number;
+  reference_by?: string;
+  group_name?: string;
+  type?: string;
+}
+
+// ─── Products ────────────────────────────────────────────────────────────────
+
+export interface Product {
+  id: string;
+  group_name?: string;
+  name: string;
+  unit?: string;
+  sales_rate: number;
+  s_unit: number;
+  p_unit: number;
+  purchase_rate: number;
+  offer: number;
+  offer_rate: number;
+  offer_sales: number;
+  category?: string;
+}
+
 // ─── User & Auth ─────────────────────────────────────────────────────────────
 
 export interface User {
@@ -86,6 +146,17 @@ export interface Invoice {
   approved_by?: string;
   approved_at?: string;
   rejection_reason?: string;
+  market_cost?: number;
+  carrying_cost?: number;
+  commission?: number;
+  free_value?: number;
+  damage_value?: number;
+  market_short?: number;
+  deposit_cash?: number;
+  due_collections?: number;
+  collections_date?: string;
+  total_sales?: number;
+  invoice_total?: number;
   created_at: string;
   updated_at: string;
   items: InvoiceItem[];
@@ -96,7 +167,35 @@ export interface CreateInvoiceRequest {
   contact_id?: string;
   subscriber_id?: string;
   notes?: string;
+  market_cost?: number;
+  carrying_cost?: number;
+  commission?: number;
+  free_value?: number;
+  damage_value?: number;
+  market_short?: number;
+  deposit_cash?: number;
+  due_collections?: number;
+  collections_date?: string;
+  total_sales?: number;
+  invoice_total?: number;
   items: Omit<InvoiceItem, 'id' | 'invoice_id'>[];
+}
+
+// ─── Broadband Payments ────────────────────────────────────────────────────────
+
+export interface BroadbandPayment {
+  id: string;
+  month_name?: string;
+  group_name?: string;
+  monthly_charge: number;
+  client_name?: string;
+  address?: string;
+  pay_date?: string;
+  running_bill: number;
+  payment_amount: number;
+  total_balance: number;
+  status?: string;
+  comments?: string;
 }
 
 // ─── Expense ─────────────────────────────────────────────────────────────────
@@ -121,6 +220,62 @@ export interface CreateExpenseRequest {
   expense_date: string;
 }
 
+// ─── Purchase System ────────────────────────────────────────────────────────────
+
+export interface PurchaseItem {
+  id: string;
+  purchase_id: string;
+  product_name?: string;
+  quantity: number;
+  unit?: string;
+  rate: number;
+  discount_percent: number;
+  discount_amount: number;
+  line_total: number;
+}
+
+export interface PurchaseInvoice {
+  id: string;
+  invoice_number: string;
+  purchase_date: string;
+  supplier_name?: string;
+  supplier_address?: string;
+  amount: number;
+  discount: number;
+  commission: number;
+  carrying_cost: number;
+  total_amount: number;
+  advance_payment: number;
+  due_amount: number;
+  total_due: number;
+  payment_date?: string;
+  status: string;
+  notes?: string;
+  submitted_by?: string;
+  created_at: string;
+  updated_at: string;
+  items: PurchaseItem[];
+}
+
+export interface CreatePurchaseRequest {
+  invoice_number: string;
+  purchase_date: string;
+  supplier_name?: string;
+  supplier_address?: string;
+  amount: number;
+  discount: number;
+  commission: number;
+  carrying_cost: number;
+  total_amount: number;
+  advance_payment: number;
+  due_amount: number;
+  total_due: number;
+  payment_date?: string;
+  status?: string;
+  notes?: string;
+  items: Omit<PurchaseItem, 'id' | 'purchase_id'>[];
+}
+
 // ─── Cashbook ─────────────────────────────────────────────────────────────────
 
 export interface CashbookEntry {
@@ -135,6 +290,21 @@ export interface CashbookEntry {
   created_by: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface CashbookTransaction {
+  id: string;
+  transaction_date: string;
+  type: 'income' | 'due' | 'expense';
+  group_name?: string;
+  sub_group?: string;
+  contact_name?: string;
+  debit?: string;
+  credit?: string;
+  amount: number;
+  actual_amount: number;
+  note?: string;
+  collected_by?: string;
 }
 
 export interface CreateCashbookEntryRequest {
@@ -194,6 +364,57 @@ export interface CreateSubscriberRequest {
   area_group?: string;
   monthly_bill: number;
   connection_date?: string;
+}
+
+// ─── Daybook (Tally-style) ────────────────────────────────────────────────────
+
+export type VoucherType = 'Receipt' | 'Payment' | 'Contra' | 'Journal' | 'Sales' | 'Purchase';
+
+export type DaybookSource = 'cashbook' | 'invoice' | 'expense';
+
+export interface DaybookEntry {
+  id: string;
+  entry_date: string;
+  voucher_type: VoucherType;
+  voucher_no: string;
+  particulars: string;
+  group_name?: string | null;
+  narration?: string | null;
+  debit_amount: number;
+  credit_amount: number;
+  debit_ledger?: string | null;
+  credit_ledger?: string | null;
+  voucher_group?: string | null;
+  source: DaybookSource;
+}
+
+export interface CreateVoucherRequest {
+  entry_date: string;
+  voucher_type: VoucherType;
+  debit_ledger: string;
+  credit_ledger: string;
+  amount: number;
+  narration?: string;
+}
+
+export interface UpdateInvoiceVoucherRequest {
+  entry_date?: string;
+  narration?: string;
+  amount?: number; // adjusts a single-line invoice total
+}
+
+export interface DaybookResponse {
+  success: boolean;
+  data: DaybookEntry[];
+  totals: {
+    total_debit: number;
+    total_credit: number;
+    opening_balance: number;
+    closing_balance: number;
+  };
+  total: number;
+  page: number;
+  limit: number;
 }
 
 // ─── Approval ─────────────────────────────────────────────────────────────────

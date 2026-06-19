@@ -14,6 +14,7 @@
     "productName": "MCT Business Manager",
     "win": {
       "target": "nsis",
+      "icon": "build/icon.png",
       "sign": null,
       "signingHashAlgorithms": []
     },

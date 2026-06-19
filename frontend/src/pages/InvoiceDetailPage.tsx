@@ -3,44 +3,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FileText, CheckCircle, XCircle, Package,
-  User, Calendar, Tag, Hash, AlertCircle, ClipboardList,
+  User, Calendar, Tag, Hash, AlertCircle, ClipboardList, CheckSquare
 } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
+import type { Invoice } from '@mct/shared';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface InvoiceItem {
-  id: string;
-  product_name: string | null;
-  line_total: number;
-  damage_a: number | null;
-  damage_b: number | null;
-  free_items: number | null;
-  commission: number | null;
-  month_name: string | null;
-  subscriber_address: string | null;
-  running_bill: number | null;
-}
-
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  category: 'matador' | 'olympic' | 'bombay' | 'mtb_broadband';
-  status: 'pending' | 'approved' | 'rejected';
-  notes: string | null;
-  rejection_reason: string | null;
-  submitted_by_name: string;
-  approved_by_name: string | null;
-  approved_at: string | null;
-  contact_name: string | null;
-  subscriber_name: string | null;
-  created_at: string;
-  due_collections: number | null;
-  collections_date: string | null;
-  items: InvoiceItem[];
+interface InvoiceDetail extends Invoice {
+  contact_name?: string | null;
+  subscriber_name?: string | null;
+  submitted_by_name?: string | null;
+  approved_by_name?: string | null;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -102,7 +77,7 @@ export default function InvoiceDetailPage() {
     queryKey: ['invoice', id],
     queryFn: async () => {
       const res = await api.get(`/invoices/${id}`);
-      return res.data.data as Invoice;
+      return res.data.data as InvoiceDetail;
     },
   });
 
@@ -258,17 +233,34 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      {/* ── MCT-Manual specific fields ── */}
-      {(data.due_collections != null || data.collections_date != null) && (
-        <div className="card mb-4" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-5)', display: 'flex', gap: 'var(--space-8)' }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>
-              Due Collections
+      {/* ── Advanced / Legacy Fields ── */}
+      <div className="card mb-4" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <CheckSquare size={13} /> Advanced / Legacy Fields
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-6)' }}>
+          {[
+            { label: 'Market Cost', value: data.market_cost },
+            { label: 'Carrying Cost', value: data.carrying_cost },
+            { label: 'Commission', value: data.commission },
+            { label: 'Free Value', value: data.free_value },
+            { label: 'Damage Value', value: data.damage_value },
+            { label: 'Market Short', value: data.market_short },
+            { label: 'Deposit Cash', value: data.deposit_cash },
+            { label: 'Due Collections', value: data.due_collections },
+            { label: 'Total Sales', value: data.total_sales },
+            { label: 'Invoice Total', value: data.invoice_total },
+          ].map(field => field.value != null && Number(field.value) !== 0 ? (
+            <div key={field.label}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>
+                {field.label}
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {fmt(Number(field.value))}
+              </div>
             </div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--success)' }}>
-              {fmt(data.due_collections ?? 0)}
-            </div>
-          </div>
+          ) : null)}
+
           {data.collections_date && (
             <div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>
@@ -280,7 +272,7 @@ export default function InvoiceDetailPage() {
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* ── Line Items ── */}
       <div className="table-wrapper" style={{ marginBottom: 'var(--space-5)' }}>

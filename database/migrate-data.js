@@ -424,6 +424,23 @@ async function run() {
       `mtbp-${r.ID}`
     ]);
 
+    // ─── 11. PURCHASE INVOICES ───────────────────────────────────────────────
+    // Note: The PrG item tables (PrG-Matador, PrG-Olympic A, etc.) are empty in the DB.
+    // We only migrate the 14 summary rows from PrG-Invoice.
+    await batchInsert('purchase_invoices', [
+      'invoice_number', 'purchase_date', 'supplier_name', 'amount',
+      'advance_payment', 'total_amount', 'due_amount', 'submitted_by'
+    ], data['PrG-Invoice'].rows, r => [
+      `PRG-${r.ID}`,
+      r.InvoiceDate || new Date(),
+      clean(r['Purchage From']),
+      r.OrderValue || 0,
+      r['Online-TT'] || 0,
+      r.GrandTotal || 0,
+      r.PendingTotal || 0,
+      adminId
+    ]);
+
   } catch (err) {
     console.error('❌ Migration failed:', err.message);
     console.error(err.stack);

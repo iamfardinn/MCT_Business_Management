@@ -11,6 +11,12 @@ import contactRoutes from './routes/contacts';
 import subscriberRoutes from './routes/subscribers';
 import reportRoutes from './routes/reports';
 import approvalRoutes from './routes/approvals';
+import daybookRoutes from './routes/daybook';
+import productsRoutes from './routes/products';
+import settingsRoutes from './routes/settings';
+import broadbandPaymentsRoutes from './routes/broadband_payments';
+import purchasesRoutes from './routes/purchases';
+import accountsRoutes from './routes/accounts';
 
 const app = express();
 
@@ -69,6 +75,12 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/approvals', approvalRoutes);
+app.use('/api/daybook', daybookRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/broadband_payments', broadbandPaymentsRoutes);
+app.use('/api/purchases', purchasesRoutes);
+app.use('/api/accounts', accountsRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {

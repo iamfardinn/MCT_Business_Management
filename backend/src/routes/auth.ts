@@ -47,13 +47,13 @@ router.post(
       const accessToken = jwt.sign(
         { sub: user.id, username: user.username, role: user.role },
         process.env.JWT_SECRET!,
-        { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+        { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') as any }
       );
 
       const refreshToken = jwt.sign(
         { sub: user.id },
         process.env.JWT_REFRESH_SECRET!,
-        { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+        { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
       );
 
       // Store hashed refresh token
@@ -129,7 +129,7 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
     const newAccessToken = jwt.sign(
       { sub: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+      { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') as any }
     );
 
     res.json({ success: true, data: { access_token: newAccessToken } });

@@ -32,6 +32,17 @@ const schema = z.object({
   contact_id: z.string().optional(),
   subscriber_id: z.string().optional(),
   notes: z.string().optional(),
+  market_cost: z.coerce.number().optional(),
+  carrying_cost: z.coerce.number().optional(),
+  commission: z.coerce.number().optional(),
+  free_value: z.coerce.number().optional(),
+  damage_value: z.coerce.number().optional(),
+  market_short: z.coerce.number().optional(),
+  deposit_cash: z.coerce.number().optional(),
+  due_collections: z.coerce.number().optional(),
+  collections_date: z.string().optional(),
+  total_sales: z.coerce.number().optional(),
+  invoice_total: z.coerce.number().optional(),
   items: z.array(z.union([productItemSchema, broadbandItemSchema])).min(1),
 });
 
@@ -258,6 +269,55 @@ export default function InvoiceNewPage() {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* ─── Advanced Fields (Legacy) ──────────────────────────── */}
+          <div className="card mb-4">
+            <details>
+              <summary className="card-header" style={{ cursor: 'pointer', outline: 'none' }}>
+                <div className="card-title">Advanced / Legacy Fields (Optional)</div>
+              </summary>
+              <div className="card-body">
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Market Cost (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('market_cost')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Carrying Cost (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('carrying_cost')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Total Commission (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('commission')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Free Value (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('free_value')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Damage Value (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('damage_value')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Market Short (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('market_short')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Deposit Cash (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('deposit_cash')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Due Collections (৳)</label>
+                    <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register('due_collections')} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Collections Date</label>
+                    <input type="date" className="form-input" {...register('collections_date')} />
+                  </div>
+                </div>
+              </div>
+            </details>
           </div>
 
           {/* Total */}

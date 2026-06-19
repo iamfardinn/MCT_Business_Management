@@ -101,5 +101,101 @@ router.patch('/:id', requireRole('admin'), async (req: Request, res: Response): 
     res.status(500).json({ success: false, error: 'Failed to update cashbook entry' });
   }
 });
+// ─── GET /api/cashbook/transactions ─────────────────────────────────────────────
+router.get('/transactions', async (req: Request, res: Response): Promise<void> => {
+  const { type, group_name, search, date } = req.query;
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  let p = 1;
+
+  if (type) { conditions.push(`type = $${p++}`); params.push(type); }
+  if (group_name) { conditions.push(`group_name = $${p++}`); params.push(group_name); }
+  if (date) { conditions.push(`transaction_date = $${p++}`); params.push(date); }
+  if (search) {
+    conditions.push(`(contact_name ILIKE $${p} OR note ILIKE $${p} OR collected_by ILIKE $${p})`);
+    params.push(`%${search}%`);
+    p++;
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM cashbook_transactions ${where} ORDER BY transaction_date DESC, id DESC LIMIT 500`,
+      params
+    );
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('[CashbookTransactions/GET]', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
+  }
+});
+
+// ─── POST /api/cashbook/transactions ────────────────────────────────────────────
+router.post('/transactions', requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
+  const {
+    transaction_date, type, group_name, sub_group, contact_name,
+    debit, credit, amount, actual_amount, note, collected_by
+  } = req.body;
+
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO cashbook_transactions (
+         transaction_date, type, group_name, sub_group, contact_name,
+         debit, credit, amount, actual_amount, note, collected_by
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING *`,
+      [
+        transaction_date || new Date().toISOString().split('T')[0], type, group_name, sub_group, contact_name,
+        debit, credit, amount || 0, actual_amount || 0, note, collected_by
+      ]
+    );
+
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('[CashbookTransactions/POST]', err);
+    res.status(500).json({ success: false, error: 'Failed to create transaction' });
+  }
+});
+
+// ─── PATCH /api/cashbook/transactions/:id ───────────────────────────────────────
+router.patch('/transactions/:id', requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
+  const updates = req.body;
+  const allowedKeys = [
+    'transaction_date', 'type', 'group_name', 'sub_group', 'contact_name',
+    'debit', 'credit', 'amount', 'actual_amount', 'note', 'collected_by'
+  ];
+
+  const keys = Object.keys(updates).filter((k) => allowedKeys.includes(k));
+  if (keys.length === 0) { res.status(400).json({ success: false, error: 'No valid fields' }); return; }
+
+  const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
+  const values = keys.map((k) => updates[k]);
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE cashbook_transactions SET ${setClause} WHERE id = $1 RETURNING *`,
+      [req.params.id, ...values]
+    );
+    if (!rows[0]) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('[CashbookTransactions/PATCH]', err);
+    res.status(500).json({ success: false, error: 'Failed to update transaction' });
+  }
+});
+
+// ─── DELETE /api/cashbook/transactions/:id ──────────────────────────────────────
+router.delete('/transactions/:id', requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM cashbook_transactions WHERE id = $1', [req.params.id]);
+    if (rowCount === 0) { res.status(404).json({ success: false, error: 'Transaction not found' }); return; }
+    res.json({ success: true, message: 'Deleted successfully' });
+  } catch (err) {
+    console.error('[CashbookTransactions/DELETE]', err);
+    res.status(500).json({ success: false, error: 'Failed to delete transaction' });
+  }
+});
 
 export default router;

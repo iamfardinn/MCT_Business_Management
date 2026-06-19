@@ -176,4 +176,83 @@ router.get('/export/transactions', async (req: Request, res: Response): Promise<
   }
 });
 
+// ─── GET /api/reports/financials/profit-loss ────────────────────────────────────
+router.get('/financials/profit-loss', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { rows: revenue } = await pool.query(`
+      SELECT c.id, c.name, COALESCE(SUM(gl.credit - gl.debit), 0) AS total
+      FROM chart_of_accounts c
+      LEFT JOIN general_ledger gl ON gl.account_id = c.id
+      WHERE c.type = 'revenue'
+      GROUP BY c.id, c.name
+      ORDER BY c.code ASC
+    `);
+
+    const { rows: expenses } = await pool.query(`
+      SELECT c.id, c.name, COALESCE(SUM(gl.debit - gl.credit), 0) AS total
+      FROM chart_of_accounts c
+      LEFT JOIN general_ledger gl ON gl.account_id = c.id
+      WHERE c.type = 'expense'
+      GROUP BY c.id, c.name
+      ORDER BY c.code ASC
+    `);
+
+    const totalRevenue = revenue.reduce((sum, r) => sum + Number(r.total), 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.total), 0);
+
+    res.json({ success: true, data: { revenue, expenses, net_income: totalRevenue - totalExpenses } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── GET /api/reports/financials/balance-sheet ────────────────────────────────
+router.get('/financials/balance-sheet', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { rows: assets } = await pool.query(`
+      SELECT c.id, c.name, COALESCE(SUM(gl.debit - gl.credit), 0) AS total
+      FROM chart_of_accounts c
+      LEFT JOIN general_ledger gl ON gl.account_id = c.id
+      WHERE c.type = 'asset'
+      GROUP BY c.id, c.name
+      ORDER BY c.code ASC
+    `);
+
+    const { rows: liabilities } = await pool.query(`
+      SELECT c.id, c.name, COALESCE(SUM(gl.credit - gl.debit), 0) AS total
+      FROM chart_of_accounts c
+      LEFT JOIN general_ledger gl ON gl.account_id = c.id
+      WHERE c.type = 'liability'
+      GROUP BY c.id, c.name
+      ORDER BY c.code ASC
+    `);
+
+    const { rows: equity } = await pool.query(`
+      SELECT c.id, c.name, COALESCE(SUM(gl.credit - gl.debit), 0) AS total
+      FROM chart_of_accounts c
+      LEFT JOIN general_ledger gl ON gl.account_id = c.id
+      WHERE c.type = 'equity'
+      GROUP BY c.id, c.name
+      ORDER BY c.code ASC
+    `);
+
+    // Add Net Income to Equity
+    const { rows: niRow } = await pool.query(`
+      SELECT 
+        COALESCE(SUM(CASE WHEN c.type = 'revenue' THEN gl.credit - gl.debit ELSE 0 END), 0) -
+        COALESCE(SUM(CASE WHEN c.type = 'expense' THEN gl.debit - gl.credit ELSE 0 END), 0) AS net_income
+      FROM chart_of_accounts c
+      JOIN general_ledger gl ON gl.account_id = c.id
+    `);
+
+    if (niRow[0].net_income != 0) {
+      equity.push({ id: 'net_income', name: 'Net Income (Current Year)', total: niRow[0].net_income });
+    }
+
+    res.json({ success: true, data: { assets, liabilities, equity } });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

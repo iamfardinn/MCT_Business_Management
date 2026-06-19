@@ -103,7 +103,12 @@ router.post(
       return;
     }
 
-    const { category, contact_id, subscriber_id, notes, items } = req.body;
+    const {
+      category, contact_id, subscriber_id, notes, items,
+      market_cost, carrying_cost, commission, free_value, damage_value,
+      market_short, deposit_cash, due_collections, collections_date,
+      total_sales, invoice_total
+    } = req.body;
 
     try {
       const invoice = await withTransaction(async (client) => {
@@ -111,12 +116,22 @@ router.post(
         const { rows: seqRows } = await client.query("SELECT nextval('invoice_number_seq') AS seq");
         const invoiceNumber = `MCT-${new Date().getFullYear()}-${String(seqRows[0].seq).padStart(5, '0')}`;
 
-        const { rows: invRows } = await client.query(
-          `INSERT INTO invoices (invoice_number, category, contact_id, subscriber_id, notes, submitted_by)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING *`,
-          [invoiceNumber, category, contact_id || null, subscriber_id || null, notes, req.user!.sub]
-        );
+          const { rows: invRows } = await client.query(
+            `INSERT INTO invoices (
+               invoice_number, category, contact_id, subscriber_id, notes, submitted_by,
+               market_cost, carrying_cost, commission, free_value, damage_value,
+               market_short, deposit_cash, due_collections, collections_date,
+               total_sales, invoice_total
+             )
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+             RETURNING *`,
+            [
+              invoiceNumber, category, contact_id || null, subscriber_id || null, notes, req.user!.sub,
+              market_cost || 0, carrying_cost || 0, commission || 0, free_value || 0, damage_value || 0,
+              market_short || 0, deposit_cash || 0, due_collections || 0, collections_date || null,
+              total_sales || 0, invoice_total || 0
+            ]
+          );
 
         const inv = invRows[0];
 
