@@ -62,6 +62,21 @@ router.patch('/employees/:id', async (req: Request, res: Response): Promise<void
   }
 });
 
+router.delete('/employees/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const oldRes = await pool.query('SELECT * FROM employees WHERE id = $1', [id]);
+    if (!oldRes.rows.length) { res.status(404).json({ success: false, error: 'Employee not found' }); return; }
+
+    await pool.query('DELETE FROM employees WHERE id = $1', [id]);
+    await writeAudit({ tableName: 'employees', recordId: id, action: 'DELETE', actorId: req.user!.sub, oldValues: oldRes.rows[0] });
+    res.json({ success: true, message: 'Employee deleted successfully' });
+  } catch (err) {
+    console.error('[HR/DELETE_EMPLOYEE]', err);
+    res.status(500).json({ success: false, error: 'Failed to delete employee' });
+  }
+});
+
 // ─── PAYROLL ─────────────────────────────────────────────────────────────────
 
 router.get('/payroll', async (req: Request, res: Response): Promise<void> => {

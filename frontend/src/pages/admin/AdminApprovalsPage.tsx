@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckSquare, CheckCircle, XCircle, FileText, TrendingDown } from 'lucide-react';
+import { CheckSquare, CheckCircle, XCircle, FileText, TrendingDown, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '../../lib/api';
 import { toast } from '../../stores/toastStore';
@@ -37,6 +37,16 @@ export default function AdminApprovalsPage() {
       setRejectReason('');
     },
     onError: () => toast.error('Failed to reject'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, type }: { id: string; type: string }) =>
+      api.delete(`/${type}s/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['approvals'] });
+      toast.success('Record deleted permanently.');
+    },
+    onError: () => toast.error('Failed to delete'),
   });
 
   return (
@@ -100,10 +110,19 @@ export default function AdminApprovalsPage() {
                   </button>
                   <button
                     id={`reject-btn-${item.id}`}
-                    className="btn btn-danger btn-sm"
+                    className="btn btn-warning btn-sm"
                     onClick={() => setRejectModal({ id: item.id, type: item.record_type })}
                   >
                     <XCircle size={14} /> Reject
+                  </button>
+                  <button
+                    id={`delete-btn-${item.id}`}
+                    className="btn btn-danger btn-sm"
+                    disabled={deleteMutation.isPending}
+                    onClick={() => { if(confirm('Are you sure you want to permanently delete this submission?')) deleteMutation.mutate({ id: item.id, type: item.record_type }); }}
+                    title="Delete permanently"
+                  >
+                    <Trash2 size={14} /> Remove
                   </button>
                 </div>
               </div>

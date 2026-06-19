@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Plus, Pencil, Search, X } from 'lucide-react';
-import api from '../../../lib/api';
-import { toast } from '../../../stores/toastStore';
+import { Users, Plus, Pencil, Search, X, Trash2 } from 'lucide-react';
+import api from '../../lib/api';
+import { toast } from '../../stores/toastStore';
 
 export default function EmployeesPage() {
   const qc = useQueryClient();
@@ -22,6 +22,15 @@ export default function EmployeesPage() {
       setDraft(null);
     },
     onError: (err: any) => toast.error(err.response?.data?.error || 'Save failed')
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/hr/employees/${id}`),
+    onSuccess: () => {
+      toast.success('Employee removed');
+      qc.invalidateQueries({ queryKey: ['hr-employees'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || 'Failed to remove employee')
   });
 
   const filtered = employees.filter((e: any) => 
@@ -81,7 +90,10 @@ export default function EmployeesPage() {
                   </span>
                 </td>
                 <td className="text-center">
-                  <button className="btn btn-ghost btn-sm" onClick={() => setDraft({ ...e, join_date: e.join_date.split('T')[0] })}><Pencil size={14} /></button>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-2)' }}>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setDraft({ ...e, join_date: e.join_date.split('T')[0] })} title="Edit Employee"><Pencil size={14} /></button>
+                    <button className="btn btn-ghost btn-sm text-danger" disabled={deleteMutation.isPending} onClick={() => { if(confirm('Are you sure you want to remove this employee?')) deleteMutation.mutate(e.id); }} title="Remove Employee"><Trash2 size={14} /></button>
+                  </div>
                 </td>
               </tr>
             ))}
