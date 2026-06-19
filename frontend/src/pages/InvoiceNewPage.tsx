@@ -12,7 +12,10 @@ import type { InvoiceCategory } from '@mct/shared';
 // ─── Validation Schemas ───────────────────────────────────────────
 
 const productItemSchema = z.object({
+  product_id: z.string().optional(),
   product_name: z.string().min(1, 'Product name required'),
+  quantity: z.coerce.number().min(0).optional(),
+  rate: z.coerce.number().min(0).optional(),
   line_total: z.coerce.number().min(0),
   damage_a: z.coerce.number().optional(),
   damage_b: z.coerce.number().optional(),
@@ -58,7 +61,7 @@ const CATEGORIES: { value: InvoiceCategory; label: string; color: string }[] = [
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function emptyProductItem() {
-  return { product_name: '', line_total: 0, damage_a: undefined, damage_b: undefined, free_items: undefined, commission: undefined };
+  return { product_id: '', product_name: '', quantity: 0, rate: 0, line_total: 0, damage_a: undefined, damage_b: undefined, free_items: undefined, commission: undefined };
 }
 function emptyBroadbandItem() {
   return { month_name: '', subscriber_address: '', running_bill: 0, subscriber_id: undefined };
@@ -87,6 +90,15 @@ export default function InvoiceNewPage() {
     queryKey: ['subscribers'],
     queryFn: async () => (await api.get('/subscribers?status=active&limit=200')).data.data,
     enabled: category === 'mtb_broadband',
+  });
+
+  const { data: products } = useQuery({
+    queryKey: ['products', category],
+    queryFn: async () => {
+      const p = new URLSearchParams({ limit: '200' });
+      if (category !== 'mtb_broadband') p.set('category', category);
+      return (await api.get(`/products?${p}`)).data.data;
+    },
   });
 
   const mutation = useMutation({
@@ -223,9 +235,45 @@ export default function InvoiceNewPage() {
 
                 {!isBroadband ? (
                   <div className="form-grid">
+                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                      <label className="form-label required">Product</label>
+                      <select 
+                        className="form-select" 
+                        {...register(`items.${idx}.product_id` as `items.${number}.product_id`)}
+                        onChange={(e) => {
+                          const p = products?.find((x: any) => x.id === e.target.value);
+                          setValue(`items.${idx}.product_id` as `items.${number}.product_id`, p ? p.id : '');
+                          setValue(`items.${idx}.product_name` as `items.${number}.product_name`, p ? p.name : '');
+                          setValue(`items.${idx}.rate` as `items.${number}.rate`, p ? p.sales_rate : 0);
+                        }}
+                      >
+                        <option value="">Select product...</option>
+                        {products?.map((p: any) => (
+                          <option key={p.id} value={p.id}>{p.name} (৳{p.sales_rate})</option>
+                        ))}
+                      </select>
+                      {/* Hidden name field to satisfy schema */}
+                      <input type="hidden" {...register(`items.${idx}.product_name` as `items.${number}.product_name`)} />
+                    </div>
                     <div className="form-group">
-                      <label className="form-label required">Product Name</label>
-                      <input className="form-input" placeholder="e.g. Cement 50kg" {...register(`items.${idx}.product_name` as `items.${number}.product_name`)} />
+                      <label className="form-label">Quantity</label>
+                      <input type="number" step="0.01" className="form-input" placeholder="0" {...register(`items.${idx}.quantity` as `items.${number}.quantity`)} 
+                        onChange={(e) => {
+                          const qty = Number(e.target.value);
+                          const rate = Number(watch(`items.${idx}.rate` as `items.${number}.rate`) || 0);
+                          setValue(`items.${idx}.line_total` as `items.${number}.line_total`, qty * rate);
+                        }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Rate (৳)</label>
+                      <input type="number" step="0.01" className="form-input" placeholder="0.00" {...register(`items.${idx}.rate` as `items.${number}.rate`)} 
+                        onChange={(e) => {
+                          const rate = Number(e.target.value);
+                          const qty = Number(watch(`items.${idx}.quantity` as `items.${number}.quantity`) || 0);
+                          setValue(`items.${idx}.line_total` as `items.${number}.line_total`, qty * rate);
+                        }}
+                      />
                     </div>
                     <div className="form-group">
                       <label className="form-label required">Line Total (৳)</label>

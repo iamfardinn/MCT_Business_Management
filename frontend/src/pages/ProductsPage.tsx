@@ -76,6 +76,7 @@ export default function ProductsPage() {
               <th>Group</th>
               <th>Product Name</th>
               <th>Unit</th>
+              <th className="text-right">Current Stock</th>
               <th className="text-right">Sales Rate</th>
               <th className="text-right">Purchase Rate</th>
               <th className="text-right">Offer</th>
@@ -86,13 +87,16 @@ export default function ProductsPage() {
             {isLoading ? (
               <tr><td colSpan={7} className="text-center">Loading...</td></tr>
             ) : products.length === 0 ? (
-              <tr><td colSpan={7} className="text-center text-muted">No products found.</td></tr>
+              <tr><td colSpan={8} className="text-center text-muted">No products found.</td></tr>
             ) : (
               products.map(p => (
                 <tr key={p.id}>
                   <td>{p.group_name || '—'}</td>
                   <td style={{ fontWeight: 500 }}>{p.name}</td>
                   <td>{p.unit || '—'}</td>
+                  <td className="text-right font-mono" style={{ fontWeight: 700, color: (p as any).current_stock < 10 ? 'var(--danger)' : 'var(--success)' }}>
+                    {Number((p as any).current_stock || 0).toFixed(0)}
+                  </td>
                   <td className="text-right font-mono">৳{Number(p.sales_rate).toFixed(2)}</td>
                   <td className="text-right font-mono">৳{Number(p.purchase_rate).toFixed(2)}</td>
                   <td className="text-right font-mono">{p.offer > 0 ? `৳${Number(p.offer).toFixed(2)}` : '—'}</td>

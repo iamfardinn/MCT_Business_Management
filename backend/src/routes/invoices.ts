@@ -139,12 +139,15 @@ router.post(
         for (const item of items) {
           await client.query(
             `INSERT INTO invoice_items
-              (invoice_id, product_name, line_total, damage_a, damage_b, free_items, commission,
+              (invoice_id, product_name, product_id, quantity, rate, line_total, damage_a, damage_b, free_items, commission,
                month_name, subscriber_address, running_bill, item_subscriber_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
             [
               inv.id,
               item.product_name || null,
+              item.product_id || null,
+              item.quantity || 0,
+              item.rate || 0,
               item.line_total || 0,
               item.damage_a || null,
               item.damage_b || null,
@@ -191,6 +194,18 @@ router.patch(
          WHERE id = $2 RETURNING *`,
         [req.user!.sub, id]
       );
+
+      // Deduct from inventory for product items
+      const { rows: items } = await pool.query('SELECT product_id, quantity FROM invoice_items WHERE invoice_id = $1 AND product_id IS NOT NULL', [id]);
+      for (const item of items) {
+        if (item.quantity > 0) {
+          await pool.query(
+            `INSERT INTO inventory_transactions (product_id, warehouse_id, action, quantity, reference_id, created_by)
+             VALUES ($1, '00000000-0000-0000-0000-000000000001', 'sale', $2, $3, $4)`,
+            [item.product_id, -item.quantity, id, req.user!.sub]
+          );
+        }
+      }
 
       await pool.query(
         `INSERT INTO approval_records (record_type, record_id, action, actor_id) VALUES ('invoice', $1, 'approve', $2)`,

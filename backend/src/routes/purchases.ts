@@ -114,15 +114,23 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       for (const item of items) {
         await client.query(
           `INSERT INTO purchase_items (
-             purchase_id, product_name, quantity, unit, rate,
+             purchase_id, product_name, product_id, quantity, unit, rate,
              discount_percent, discount_amount, line_total
            )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
-            inv.id, item.product_name, item.quantity || 0, item.unit, item.rate || 0,
+            inv.id, item.product_name, item.product_id || null, item.quantity || 0, item.unit, item.rate || 0,
             item.discount_percent || 0, item.discount_amount || 0, item.line_total || 0
           ]
         );
+
+        if (item.product_id && (item.quantity || 0) > 0) {
+          await client.query(
+            `INSERT INTO inventory_transactions (product_id, warehouse_id, action, quantity, reference_id, created_by)
+             VALUES ($1, '00000000-0000-0000-0000-000000000001', 'purchase', $2, $3, $4)`,
+            [item.product_id, item.quantity, inv.id, req.user!.sub]
+          );
+        }
       }
 
       return inv;

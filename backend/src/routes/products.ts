@@ -15,16 +15,16 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   let p = 1;
 
   if (search) {
-    conditions.push(`(name ILIKE $${p} OR group_name ILIKE $${p})`);
+    conditions.push(`(p.name ILIKE $${p} OR p.group_name ILIKE $${p})`);
     params.push(`%${search}%`);
     p++;
   }
   if (category) {
-    conditions.push(`category = $${p++}`);
+    conditions.push(`p.category = $${p++}`);
     params.push(category);
   }
   if (group_name) {
-    conditions.push(`group_name = $${p++}`);
+    conditions.push(`p.group_name = $${p++}`);
     params.push(group_name);
   }
 
@@ -32,7 +32,11 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT * FROM products ${where} ORDER BY group_name ASC, name ASC`,
+      `SELECT p.*, COALESCE(s.current_stock, 0) as current_stock 
+       FROM products p
+       LEFT JOIN product_stock s ON p.id = s.product_id AND s.warehouse_id = '00000000-0000-0000-0000-000000000001'
+       ${where} 
+       ORDER BY p.group_name ASC, p.name ASC`,
       params
     );
     res.json({ success: true, data: rows });
