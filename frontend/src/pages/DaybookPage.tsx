@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import api from '../lib/api';
 import { toast } from '../stores/toastStore';
 import { useNavigate } from 'react-router-dom';
+import { Pagination } from '../components/ui/Pagination';
 import type { DaybookEntry, DaybookResponse } from '@mct/shared';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -356,6 +357,7 @@ export default function DaybookPage() {
   const [to,   setTo]             = useState(today());
   const [voucherType, setVType]   = useState('');
   const [page, setPage]           = useState(1);
+  const [limit, setLimit]         = useState(200);
 
   // ── UI state
   const [config, setConfig] = useState<DaybookConfig>({
@@ -399,9 +401,9 @@ export default function DaybookPage() {
 
   // ── Data fetch
   const { data, isLoading } = useQuery<DaybookResponse>({
-    queryKey: ['daybook', from, to, voucherType, page, config.sortAsc],
+    queryKey: ['daybook', from, to, voucherType, page, limit, config.sortAsc],
     queryFn: async () => {
-      const p = new URLSearchParams({ page: String(page), limit: '500', sort: config.sortAsc ? 'asc' : 'desc' });
+      const p = new URLSearchParams({ page: String(page), limit: String(limit), sort: config.sortAsc ? 'asc' : 'desc' });
       if (from) p.set('from', from);
       if (to)   p.set('to',   to);
       if (voucherType) p.set('voucher_type', voucherType);
@@ -916,14 +918,14 @@ export default function DaybookPage() {
       </div>
 
       {/* ─── Pagination ─── */}
-      {data && data.total > data.limit && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-          <button className="btn btn-secondary btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</button>
-          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Page {page} of {Math.ceil(data.total / data.limit)}
-          </span>
-          <button className="btn btn-secondary btn-sm" disabled={page >= Math.ceil(data.total / data.limit)} onClick={() => setPage(p => p + 1)}>Next</button>
-        </div>
+      {data && (
+        <Pagination
+          page={page}
+          limit={limit}
+          total={data.total}
+          onPageChange={setPage}
+          onLimitChange={(l) => { setLimit(l); setPage(1); }}
+        />
       )}
 
       {/* ─── Configure Drawer (F12) ─── */}

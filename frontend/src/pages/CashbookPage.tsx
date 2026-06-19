@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import api from '../lib/api';
 import { toast } from '../stores/toastStore';
 import { useAuthStore } from '../stores/authStore';
+import { Pagination } from '../components/ui/Pagination';
 import type { CashbookTransaction } from '@mct/shared';
 
 // ─── Schema for Daily Summary ───────────────────────────────────────────────
@@ -36,6 +37,8 @@ export default function CashbookPage() {
   const [showSummaryForm, setShowSummaryForm] = useState(false);
   const [txDraft, setTxDraft] = useState<Partial<CashbookTransaction> | null>(null);
   const [txSearch, setTxSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
 
   // ─── Queries ────────────────────────────────────────────────────────────────
   const { data: summaryEntries, isLoading: loadingSummary } = useQuery({
@@ -49,16 +52,21 @@ export default function CashbookPage() {
     queryFn: async () => (await api.get('/cashbook/summary')).data.data,
   });
 
-  const { data: transactions, isLoading: loadingTx } = useQuery({
-    queryKey: ['cashbook_transactions', activeTab, txSearch],
+  const { data: txData, isLoading: loadingTx } = useQuery({
+    queryKey: ['cashbook_transactions', activeTab, txSearch, page, limit],
     queryFn: async () => {
       const p = new URLSearchParams();
       if (activeTab !== 'summary') p.set('type', activeTab);
       if (txSearch) p.set('search', txSearch);
-      return (await api.get(`/cashbook/transactions?${p}`)).data.data;
+      p.set('page', page.toString());
+      p.set('limit', limit.toString());
+      return (await api.get(`/cashbook/transactions?${p}`)).data;
     },
     enabled: activeTab !== 'summary',
   });
+
+  const transactions = txData?.data || [];
+  const totalTx = txData?.total || 0;
 
   // ─── Mutations ──────────────────────────────────────────────────────────────
   const { register, handleSubmit, reset } = useForm<CashbookSummaryForm>({
@@ -132,7 +140,7 @@ export default function CashbookPage() {
             key={tab.id}
             className={`tab ${activeTab === tab.id ? 'active' : ''}`}
             data-tab={tab.id}
-            onClick={() => { setActiveTab(tab.id); setTxSearch(''); }}
+            onClick={() => { setActiveTab(tab.id); setTxSearch(''); setPage(1); }}
           >
             <tab.icon size={15} />
             {tab.label}
@@ -199,8 +207,9 @@ export default function CashbookPage() {
 
       {/* ── Transactions Tab Content ── */}
       {activeTab !== 'summary' && (
-        <div className="table-wrapper">
-          <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid var(--border-subtle)' }}>
+        <>
+          <div className="table-wrapper">
+            <div style={{ padding: 'var(--space-3)', borderBottom: '1px solid var(--border-subtle)' }}>
             <div className="search-input-wrapper" style={{ maxWidth: 300 }}>
               <Search size={14} className="search-icon" />
               <input type="text" className="form-input" placeholder="Search transactions..." value={txSearch} onChange={e => setTxSearch(e.target.value)} style={{ paddingLeft: '2rem' }} />
@@ -251,7 +260,16 @@ export default function CashbookPage() {
             <div className="empty-state"><div className="empty-state-title">No transactions found</div></div>
           )}
         </div>
-      )}
+        
+        <Pagination 
+          page={page} 
+          limit={limit} 
+          total={totalTx} 
+          onPageChange={setPage} 
+          onLimitChange={(l) => { setLimit(l); setPage(1); }} 
+        />
+      </>
+    )}
 
       {/* ── Summary Form Modal ── */}
       {showSummaryForm && (

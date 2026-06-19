@@ -103,10 +103,9 @@ router.patch('/:id', requireRole('admin'), async (req: Request, res: Response): 
 });
 // ─── GET /api/cashbook/transactions ─────────────────────────────────────────────
 router.get('/transactions', async (req: Request, res: Response): Promise<void> => {
-  const { type, group_name, search, date } = req.query;
-
-  const conditions: string[] = [];
-  const params: unknown[] = [];
+  const { type, group_name, date, search, page = '1', limit = '50' } = req.query;
+  const conditions = [];
+  const params: any[] = [];
   let p = 1;
 
   if (type) { conditions.push(`type = $${p++}`); params.push(type); }
@@ -119,13 +118,18 @@ router.get('/transactions', async (req: Request, res: Response): Promise<void> =
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const limitNum = parseInt(limit as string, 10);
+  const offset = (parseInt(page as string, 10) - 1) * limitNum;
 
   try {
+    const countRes = await pool.query(`SELECT COUNT(*) FROM cashbook_transactions ${where}`, params);
+    const total = parseInt(countRes.rows[0].count, 10);
+
     const { rows } = await pool.query(
-      `SELECT * FROM cashbook_transactions ${where} ORDER BY transaction_date DESC, id DESC LIMIT 500`,
-      params
+      `SELECT * FROM cashbook_transactions ${where} ORDER BY transaction_date DESC, id DESC LIMIT $${p++} OFFSET $${p++}`,
+      [...params, limitNum, offset]
     );
-    res.json({ success: true, data: rows });
+    res.json({ success: true, data: rows, total, page: parseInt(page as string, 10), limit: limitNum });
   } catch (err) {
     console.error('[CashbookTransactions/GET]', err);
     res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
